@@ -13,16 +13,13 @@ import (
 var pool *redis.Pool
 
 func main() {
-	redisPort := os.Getenv("REDIS_PORT")
-	if redisPort == "" {
-		redisPort = "6379"
-	}
+	redisUrl := getEnv("REDIS_URL", "localhost:6379")
 
 	pool = &redis.Pool{
 		MaxIdle:     10,
 		IdleTimeout: 240 * time.Second,
 		Dial: func() (redis.Conn, error) {
-			return redis.Dial("tcp", ":"+redisPort)
+			return redis.Dial("tcp", redisUrl)
 		},
 	}
 
@@ -33,4 +30,12 @@ func main() {
 	if err := http.ListenAndServe(":9090", router); err != nil {
 		log.Fatalf("%+v", err)
 	}
+}
+
+func getEnv(key, defaultValue string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value
 }
